@@ -1,0 +1,17 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background-color: #232323;
+    color: #e0e0e0; /* Set the default text color for the document */
+  }
+  
+  #root {
+    /* padding: 2rem; */
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  
