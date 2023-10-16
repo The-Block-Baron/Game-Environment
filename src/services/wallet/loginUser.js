@@ -12,6 +12,9 @@ export const loginUser = async (walletAddress, signedMessage, originalMessage) =
         if (!response.ok) {
             throw new Error(data.message || "Failed to log in.");
         }
+
+        return data.user;  
+
     } catch (error) {
         console.error("Error logging in:", error);
         throw error;

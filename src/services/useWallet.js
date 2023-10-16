@@ -1,50 +1,64 @@
-import { useState } from 'react';
-
+import { useState, useEffect } from 'react';
 import { connectToWallet } from './wallet/walletService';
 import { checkRegistration } from './wallet/checkRegistration';
-import { loginUser } from './wallet/loginUser';
 
 export const useWallet = () => {
     const [address, setAddress] = useState(null);
     const [loading, setLoading] = useState(false);
     const [isRegistered, setIsRegistered] = useState(null);
-    const [showConnectPrompt, setShowConnectPrompt] = useState(false);
     const [errors, setErrors] = useState([]);
+    const [originalMessage, setOriginalMessage] = useState(null);
+    const [signedMessage, setSignedMessage] = useState(null);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+
+
+
+    useEffect(() => {
+        // Verifica inicialmente si la cartera está conectada
+        if (window.ethereum && window.ethereum.selectedAddress) {
+            setAddress(window.ethereum.selectedAddress);
+        } else {
+            setAddress(null); // Esto reflejará que no hay cartera conectada
+        }
+    
+        const handleAccountsChanged = (accounts) => {
+            if (accounts.length === 0) {
+                setAddress(null);
+            } else {
+                setAddress(accounts[0]);
+            }
+        };
+    
+        // Escucha el evento accountsChanged
+        window.ethereum.on('accountsChanged', handleAccountsChanged);
+        
+        return () => {
+            window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        };
+    }, []);
+    
+    
+
   
     const handleConnect = async () => {
         if (loading || address) return;
         try {
-            await proceedToConnect();
-        } catch (error) {
-            console.error("Error al conectar:", error);
-        }
-    };
-    
-    const proceedToConnect = async () => {
-        setLoading(true);
-        try {
-            if (isRegistered) {
-                return;
-            }
-
+            setLoading(true);
             const walletData = await connectToWallet();
             if (!walletData || !walletData.address) {
                 throw new Error("Failed to connect to wallet");
             }
             setAddress(walletData.address);
+            setOriginalMessage(walletData.originalMessage);
+            setSignedMessage(walletData.signedMessage);
+
+            // Check if the user is registered
             const registrationStatus = await checkRegistration(walletData.address);
             setIsRegistered(registrationStatus);
-            
-            if(registrationStatus) {
-                try {
-                    loginUser(walletData.address, walletData.signedMessage, walletData.originalMessage);
-                } catch (loginError) {
-                    console.error("Error during login:", loginError);
-                    setErrors(prevErrors => [...prevErrors, loginError.message]);
-                }
-            } else {
-                setShowConnectPrompt(true);
+            if (!registrationStatus) {
+                setShowRegisterModal(true);
             }
+            
         } catch (error) {
             console.error(`Error al conectar la wallet: `, error);
             setErrors([error.message]);
@@ -53,18 +67,16 @@ export const useWallet = () => {
         }
     };
     
-
-    const hideConnectPrompt = () => {
-        setShowConnectPrompt(false);
-    };
-    
     return { 
         handleConnect, 
-        hideConnectPrompt,
         address, 
         loading, 
+        setIsRegistered,
         isRegistered,
-        showConnectPrompt,
-        errors
+        originalMessage,
+        signedMessage,
+        errors,
+        showRegisterModal,
+        setShowRegisterModal
     };
 };
