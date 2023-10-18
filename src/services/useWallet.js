@@ -1,35 +1,57 @@
 import { useState, useEffect } from 'react';
 import { connectToWallet } from './wallet/walletService';
 import { checkRegistration } from './wallet/checkRegistration';
+import { checkTokenValidity } from './wallet/authService';
 
 export const useWallet = () => {
     const [address, setAddress] = useState(null);
     const [loading, setLoading] = useState(false);
     const [isRegistered, setIsRegistered] = useState(null);
     const [errors, setErrors] = useState([]);
-    const [originalMessage, setOriginalMessage] = useState(null);
-    const [signedMessage, setSignedMessage] = useState(null);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [userData, setUserData] = useState(null);
 
 
 
     useEffect(() => {
-        // Verifica inicialmente si la cartera está conectada
-        if (window.ethereum && window.ethereum.selectedAddress) {
-            setAddress(window.ethereum.selectedAddress);
-        } else {
-            setAddress(null); // Esto reflejará que no hay cartera conectada
-        }
-    
-        const handleAccountsChanged = (accounts) => {
-            if (accounts.length === 0) {
-                setAddress(null);
-            } else {
-                setAddress(accounts[0]);
+        const checkAndSetRegistration = async (addressToCheck) => {
+            try {
+                const registered = await checkRegistration(addressToCheck);
+                setIsRegistered(registered);
+            } catch (error) {
+                console.error("Error checking registration:", error);
             }
         };
     
-        // Escucha el evento accountsChanged
+        const verifyTokenAndSetUserData = async () => {
+            try {
+                const user = await checkTokenValidity();
+                setUserData(user);
+            } catch (error) {
+                console.error("Error verifying token:", error);
+            }
+        };
+    
+        if (window.ethereum && window.ethereum.selectedAddress) {
+            const currentAddress = window.ethereum.selectedAddress;
+            setAddress(currentAddress);
+            checkAndSetRegistration(currentAddress);
+        } else {
+            setAddress(null);
+        }
+
+        verifyTokenAndSetUserData();
+    
+        const handleAccountsChanged = async (accounts) => {
+            if (accounts.length === 0) {
+                setAddress(null);
+            } else {
+                const newAddress = accounts[0];
+                setAddress(newAddress);
+                checkAndSetRegistration(newAddress);
+            }
+        };
+    
         window.ethereum.on('accountsChanged', handleAccountsChanged);
         
         return () => {
@@ -38,7 +60,6 @@ export const useWallet = () => {
     }, []);
     
     
-
   
     const handleConnect = async () => {
         if (loading || address) return;
@@ -52,7 +73,6 @@ export const useWallet = () => {
             setOriginalMessage(walletData.originalMessage);
             setSignedMessage(walletData.signedMessage);
 
-            // Check if the user is registered
             const registrationStatus = await checkRegistration(walletData.address);
             setIsRegistered(registrationStatus);
             if (!registrationStatus) {
@@ -73,10 +93,10 @@ export const useWallet = () => {
         loading, 
         setIsRegistered,
         isRegistered,
-        originalMessage,
-        signedMessage,
         errors,
         showRegisterModal,
-        setShowRegisterModal
+        setShowRegisterModal,
+        userData,
+        setUserData
     };
 };

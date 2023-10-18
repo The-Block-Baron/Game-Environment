@@ -1,8 +1,10 @@
 import React from 'react';
 import { useState } from 'react';
+import { ethers } from 'ethers';
 
 import { registerUser } from '../../services/wallet/registerUser';
 import { loginUser } from '../../services/wallet/loginUser';
+import { logoutUser } from '../../services/wallet/logoutUser';
 
 import { useWallet } from '../../services/useWallet';
 import { Button, Modal, Input, StatusCircle, SignUp, Welcome, LabelContainer, ButtonContainer, StyledButton, CloseButton } from './StyledHeader';  // Asumiendo que tienes un componente Styled para el círculo verde
@@ -15,17 +17,16 @@ const Header = () => {
         address, 
         loading, 
         isRegistered, 
-        originalMessage,
-        signedMessage,
         showRegisterModal,
-        setShowRegisterModal
+        setShowRegisterModal,
+        userData,
+        setUserData 
     } = useWallet();
     
 
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [confirmEmail, setConfirmEmail] = useState("");
-    const [userData, setUserData] = useState(null); 
 
     const handleOutsideClick = (e) => {
         if (e.target.id === "modalContainer") {
@@ -51,13 +52,29 @@ const Header = () => {
 
     const handleLogin = async () => {
         try {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const originalMessage = "Por favor, firma este mensaje para iniciar sesión.";
+            const signedMessage = await (await provider.getSigner()).signMessage(originalMessage);
+    
             const user = await loginUser(address, signedMessage, originalMessage);
-            console.log(user)
+            console.log(user);
             setUserData(user);
         } catch (error) {
             console.error("Error during login:", error);
         }
     };
+
+    const handleLogout = async () => {
+        try {
+            const message = await logoutUser();
+            alert(message);  // Muestra un mensaje de éxito
+            setUserData(null);  // Limpia el userData
+        } catch (error) {
+            console.error("Error during logout:", error);
+            alert("Error al cerrar la sesión. Inténtalo de nuevo.");
+        }
+    };
+    
 
     const hideConnectPrompt = () => {
         setShowRegisterModal(false)
@@ -70,14 +87,23 @@ const Header = () => {
                 {address ? 'CONNECTED' : 'CONNECT'}
             </Button>
 
-            {address && !isRegistered && <Button onClick={() => setShowRegisterModal(true)}>REGISTER</Button>}
-            {!userData && address && isRegistered && <Button onClick={handleLogin}>LOGIN</Button>}
-
-            {userData && (
-                <div>
-                    <h2>Hey, {userData.username}</h2>
-                    <small>{address}</small>
-                </div>
+            {address && (
+                <>
+                    {isRegistered ? (
+                        <>
+                            {!userData && <Button onClick={handleLogin}>LOGIN</Button>}
+                            {userData && (
+                                <div>
+                                    <h2>Hey, {userData.username}</h2>
+                                    <small>{address}</small>
+                                    <Button onClick={handleLogout}>LOGOUT</Button>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <Button onClick={() => setShowRegisterModal(true)}>REGISTER</Button>
+                    )}
+                </>
             )}
 
             {showRegisterModal && (
@@ -120,6 +146,7 @@ const Header = () => {
                 </div>
             )}
         </HeaderContainer>
+
     );
 }
 
