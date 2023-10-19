@@ -1,6 +1,8 @@
+
+
 export const checkRegistration = async (walletAddress) => {
     try {
-        const response = await fetch(`http://localhost:3004/api/v1/user/isRegistered`, {
+        const response = await fetch(`https://localhost:3004/api/v1/user/isRegistered`, {
             credentials: 'include',
             method: 'POST',
             headers: {

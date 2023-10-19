@@ -1,6 +1,6 @@
 export const logoutUser = async () => {
     try {
-        const response = await fetch("http://localhost:3004/api/v1/auth/logout", {
+        const response = await fetch("https://localhost:3004/api/v1/auth/logout", {
             method: "POST",
             credentials: 'include',
         });

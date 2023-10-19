@@ -1,8 +1,9 @@
 // services/authService.js
 
+
 export const checkTokenValidity = async () => {
     try {
-      const response = await fetch("http://localhost:3004/api/v1/auth/check-token", {
+      const response = await fetch("https://localhost:3004/api/v1/auth/check-token", {
         method: "GET",
         credentials: 'include', 
       });

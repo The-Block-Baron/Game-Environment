@@ -1,7 +1,7 @@
 export const loginUser = async (walletAddress, signedMessage, originalMessage) => {
     try {
         console.log(signedMessage)
-        const response = await fetch("http://localhost:3004/api/v1/auth/login", {
+        const response = await fetch("https://localhost:3004/api/v1/auth/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

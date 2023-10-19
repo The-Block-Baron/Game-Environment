@@ -7,8 +7,7 @@ import { loginUser } from '../../services/wallet/loginUser';
 import { logoutUser } from '../../services/wallet/logoutUser';
 
 import { useWallet } from '../../services/useWallet';
-import { Button, Modal, Input, StatusCircle, SignUp, Welcome, LabelContainer, ButtonContainer, StyledButton, CloseButton } from './StyledHeader';  // Asumiendo que tienes un componente Styled para el círculo verde
-import { HeaderContainer } from './StyledHeader';
+import { HeaderContainer, Button, Modal, Input, StatusCircle, SignUp, Welcome, LabelContainer, ButtonContainer, StyledButton, CloseButton, ConnectContainer, UserContainer } from './StyledHeader';  
 
 const Header = () => {
     const { 
@@ -82,10 +81,19 @@ const Header = () => {
 
     return (
         <HeaderContainer>
-            {address && <StatusCircle />}  {/* Círculo verde */}
-            <Button onClick={handleConnect} disabled={loading}>
-                {address ? 'CONNECTED' : 'CONNECT'}
-            </Button>
+
+            <ConnectContainer>
+                {address && <StatusCircle />}
+                <Button onClick={handleConnect} disabled={loading}>
+                    {address ? 'CONNECTED' : 'CONNECT'}
+                </Button>
+                {userData && (
+                    <UserContainer>
+                        <h2>Welcome, {userData.username} !</h2>
+                        <small>{address}</small>
+                    </UserContainer>
+                )}
+            </ConnectContainer>
 
             {address && (
                 <>
@@ -94,8 +102,6 @@ const Header = () => {
                             {!userData && <Button onClick={handleLogin}>LOGIN</Button>}
                             {userData && (
                                 <div>
-                                    <h2>Hey, {userData.username}</h2>
-                                    <small>{address}</small>
                                     <Button onClick={handleLogout}>LOGOUT</Button>
                                 </div>
                             )}

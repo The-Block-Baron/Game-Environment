@@ -7,13 +7,15 @@ export const Button = styled.button`
     letter-spacing: 2.5px;
     background: transparent;
     border: none;
+    margin-right: 20px;
     `
 
 export const HeaderContainer = styled.div`
     display: flex;
-    justify-content: flex-end;
-    background-color: #1B1B1B;
+    justify-content: space-between;
+    background-color: #101010;
     padding: 20px;
+    align-items: center;
 `
 export const Modal = styled.div`
     position: fixed;
@@ -31,10 +33,11 @@ export const Modal = styled.div`
 `;
 
 export const StatusCircle = styled.div`
-    border: 1px solid white;
-    background-color: green;
-    width: 20px;
+    background-color: #57E400;
+    width: 12px;
+    height: 12px;
     border-radius: 10px;
+    margin-left: 20px;
 `;
 
 export const Input = styled.input`
@@ -120,3 +123,26 @@ export const CloseButton = styled.span`
     font-weight: bold;
     font-family: Afogand;
 `;
+
+export const ConnectContainer = styled.div`
+display: flex;
+align-items: center;
+gap: 5px;
+`;
+
+export const UserContainer = styled.div`
+display: Flex;
+flex-direction: Column;
+text-align:left;
+    h2 {
+        font-family: Afogand;
+        letter-spacing: 2px;
+        font-size: 15px;
+        line-height: 0px
+    }
+    small {
+        font-family: Inter;
+        font-size: 9px;
+        line-height: 10px;
+    }
+`

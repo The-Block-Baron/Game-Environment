@@ -1,6 +1,6 @@
 export const registerUser = async (walletAddress, username, email) => {
     try {
-        const response = await fetch("http://localhost:3004/api/v1/auth/register", {
+        const response = await fetch("https://localhost:3004/api/v1/auth/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

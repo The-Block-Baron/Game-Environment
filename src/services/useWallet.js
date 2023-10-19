@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { connectToWallet } from './wallet/walletService';
 import { checkRegistration } from './wallet/checkRegistration';
 import { checkTokenValidity } from './wallet/authService';
+import { logoutUser } from './wallet/logoutUser';
 
 export const useWallet = () => {
     const [address, setAddress] = useState(null);
@@ -26,25 +27,46 @@ export const useWallet = () => {
         const verifyTokenAndSetUserData = async () => {
             try {
                 const user = await checkTokenValidity();
-                setUserData(user);
+    
+                const { username, address } = user || {};
+        
+                if (username && address) {
+                    setUserData(user);
+                } else {
+                    setUserData(null);
+                }
             } catch (error) {
                 console.error("Error verifying token:", error);
+                setUserData(null);
+            }
+            
+            const ethereum = typeof window !== 'undefined' && window.ethereum;
+        
+            if (ethereum) {
+                const { selectedAddress } = ethereum;
+        
+                if (selectedAddress) {
+                    setAddress(selectedAddress);
+                    checkAndSetRegistration(selectedAddress);
+                } else {
+                    setAddress(null);
+                }
             }
         };
-    
-        if (window.ethereum && window.ethereum.selectedAddress) {
-            const currentAddress = window.ethereum.selectedAddress;
-            setAddress(currentAddress);
-            checkAndSetRegistration(currentAddress);
-        } else {
-            setAddress(null);
-        }
+        
 
         verifyTokenAndSetUserData();
     
         const handleAccountsChanged = async (accounts) => {
             if (accounts.length === 0) {
                 setAddress(null);
+                setUserData(null); 
+
+                try {
+                    await logoutUser(); 
+                } catch (error) {
+                    console.error("Error during logout:", error);
+                }
             } else {
                 const newAddress = accounts[0];
                 setAddress(newAddress);
